@@ -1,0 +1,4 @@
+(executable
+ (public_name lambdish)
+ (name main)
+ (libraries lambdish))
