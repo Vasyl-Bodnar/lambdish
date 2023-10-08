@@ -1,20 +1,33 @@
-type variable = string
-
 (* This is essentially the result type, however Ok/Error makes less sense for my usecase *)
 type ('a, 'b) either = Left of 'a | Right of 'b
+type variable = string
 
 type tok =
   | Def of variable * tok list
   | Fun of variable * tok list
   | Var of variable
   | Parens of tok list
-  | Integer of int (* TEMP? *)
+  | Integer of int
+  | Str of string
+
+let rec tok_to_str = function
+  | Def (name, toks) ->
+      Printf.sprintf "%s := %s" name
+        (List.map tok_to_str toks |> String.concat " ")
+  | Fun (var, toks) ->
+      Printf.sprintf "λ%s. %s" var
+        (List.map tok_to_str toks |> String.concat " ")
+  | Var var -> var
+  | Parens toks ->
+      Printf.sprintf "(%s)" (List.map tok_to_str toks |> String.concat " ")
+  | Integer i -> string_of_int i
+  | Str s -> Printf.sprintf "\"%s\"" s
 
 open Seq
 
-type setts = { parens : int; lambda : bool }
+type setts = { parens : int; lambda : bool; str : bool }
 
-let default_setts = { parens = 0; lambda = false }
+let default_setts = { parens = 0; lambda = false; str = false }
 let incr_parens sett = { sett with parens = sett.parens + 1 }
 let decr_parens sett = { sett with parens = sett.parens - 1 }
 
@@ -43,6 +56,10 @@ and expr sett = function
   | Cons (')', cs) when sett.parens > 0 -> ([], Cons (')', cs))
   | Cons (')', _) when sett.parens = 0 -> failwith "Unmatched Parens"
   | Cons ((' ' | '\n'), cs) -> expr sett (cs ())
+  | Cons ('"', cs) ->
+      let str, rest = str sett (cs ()) in
+      let toks, rest = expr sett rest in
+      (Str (String.of_seq (fun () -> str)) :: toks, rest)
   | Cons (('0' .. '9' as c), cs) ->
       let intg, rest = integer sett (Cons (c, cs)) in
       let intg_len = length (fun () -> intg) in
@@ -124,5 +141,12 @@ and integer sett = function
       (Cons (int_of_char c - 48, fun () -> intg), rest)
   | Nil -> (Nil, Nil)
   | _ -> failwith "Bad Integer"
+
+and str sett = function
+  | Cons ('"', cs) -> (Nil, cs ())
+  | Cons (c, cs) ->
+      let str, rest = str sett (cs ()) in
+      (Cons (c, fun () -> str), rest)
+  | Nil -> failwith "Unfinished String"
 
 (* let test str = lex default_setts (String.to_seq str ()) *)

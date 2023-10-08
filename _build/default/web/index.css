@@ -1,0 +1,18 @@
+body {
+  background: #1d1f21;
+  color: #c5c8c6;
+  font-family: monospace;
+  height: 100vh;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  word-break: break-all;
+  margin: 0;
+  padding: 16px;
+}
+
+#interpreter {
+  display: inline;
+  outline: none;
+  visibility: visible;
+}

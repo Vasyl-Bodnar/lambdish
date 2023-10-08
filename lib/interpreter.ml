@@ -15,6 +15,7 @@ and eval modl = function
   | Parens ptoks :: toks -> eval modl ptoks @ eval modl toks
   | Var var :: toks -> resolve modl var :: eval modl toks
   | Integer intg :: toks -> Integer intg :: eval modl toks
+  | Str str :: toks -> Str str :: eval modl toks
   | t -> t
 
 and apply modl var body = function
