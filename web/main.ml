@@ -4,15 +4,27 @@ open Lambdish.Parser
 open Lambdish.Interpreter
 
 let string_run modl str =
-  parse default_setts (String.to_seq str ())
-  |> interpret modl |> List.map tok_to_str |> String.concat " "
+  try
+    parse default_setts (String.to_seq str ())
+    |> interpret modl |> List.map tok_to_str |> String.concat " "
+  with
+  | Unbalanced_parens -> "Unbalanced Parenthesis"
+  | Unfinished_fun -> "Unfinished Function"
+  | Unfinished_str -> "Unfinished String"
+  | Bad_int -> "Bad Number"
+  | Undefined_var var -> "Undefined Variable: " ^ var
+  | _ -> "Unknown Error"
 
 let make_div d parent text =
   let div = Html.createDiv d in
   div##.innerHTML := text;
   Dom.appendChild parent div
 
-let std_lib : string = {|
+let std_lib : string =
+  {|
+  (I := \x.x)
+  (K := \x.y.x)
+  (S := \x.y.z.x z(y z))
 |}
 
 let onload _ =

@@ -2,6 +2,11 @@
 type ('a, 'b) either = Left of 'a | Right of 'b
 type variable = string
 
+exception Unbalanced_parens
+exception Unfinished_fun
+exception Unfinished_str
+exception Bad_int
+
 type tok =
   | Def of variable * tok list
   | Fun of variable * tok list
@@ -15,7 +20,7 @@ let rec tok_to_str = function
       Printf.sprintf "%s := %s" name
         (List.map tok_to_str toks |> String.concat " ")
   | Fun (var, toks) ->
-      Printf.sprintf "λ%s. %s" var
+      Printf.sprintf "(λ%s. %s)" var
         (List.map tok_to_str toks |> String.concat " ")
   | Var var -> var
   | Parens toks ->
@@ -52,9 +57,9 @@ and expr sett = function
       | Cons (')', cs) when sett.parens > 1 ->
           let inn_toks, rest = expr (decr_parens sett) (cs ()) in
           (Parens toks :: inn_toks, rest)
-      | _ -> failwith "Unmatched Parens")
+      | _ -> raise Unbalanced_parens)
   | Cons (')', cs) when sett.parens > 0 -> ([], Cons (')', cs))
-  | Cons (')', _) when sett.parens = 0 -> failwith "Unmatched Parens"
+  | Cons (')', _) when sett.parens = 0 -> raise Unbalanced_parens
   | Cons ((' ' | '\n'), cs) -> expr sett (cs ())
   | Cons ('"', cs) ->
       let str, rest = str sett (cs ()) in
@@ -97,7 +102,7 @@ and lambda sett = function
   | Cons (c, cs) ->
       let name, body = lambda sett (cs ()) in
       (Cons (c, fun () -> name), body)
-  | _ -> failwith "Unfinished Function"
+  | _ -> raise Unfinished_fun
 
 and try_lambda sett = function
   | Cons ('.', cs) -> (Left Nil, cs ())
@@ -140,13 +145,13 @@ and integer sett = function
       let intg, rest = integer sett (cs ()) in
       (Cons (int_of_char c - 48, fun () -> intg), rest)
   | Nil -> (Nil, Nil)
-  | _ -> failwith "Bad Integer"
+  | _ -> raise Bad_int
 
 and str sett = function
   | Cons ('"', cs) -> (Nil, cs ())
   | Cons (c, cs) ->
       let str, rest = str sett (cs ()) in
       (Cons (c, fun () -> str), rest)
-  | Nil -> failwith "Unfinished String"
+  | Nil -> raise Unfinished_str
 
 (* let test str = lex default_setts (String.to_seq str ()) *)

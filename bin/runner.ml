@@ -3,8 +3,17 @@ open Lambdish.Parser
 open Lambdish.Interpreter
 
 let string_run ?(modl = default_modl) str =
-  parse default_setts (String.to_seq str ())
-  |> interpret modl |> List.map tok_to_str |> String.concat " " |> print_endline
+  try
+    parse default_setts (String.to_seq str ())
+    |> interpret modl |> List.map tok_to_str |> String.concat " "
+    |> print_endline
+  with
+  | Unbalanced_parens -> print_endline "Unbalanced Parenthesis"
+  | Unfinished_fun -> print_endline "Unfinished Function"
+  | Unfinished_str -> print_endline "Unfinished String"
+  | Bad_int -> print_endline "Bad Number"
+  | Undefined_var var -> print_endline ("Undefined Variable: " ^ var)
+  | _ -> print_endline "Unknown Error"
 
 let file_run ?(modl = default_modl) name args =
   let fh = open_in name in
