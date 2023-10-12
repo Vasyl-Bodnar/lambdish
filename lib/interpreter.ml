@@ -33,6 +33,17 @@ let apply modl var body = function
   | Var bound_var -> substitute var (resolve modl bound_var) body
   | tok -> substitute var (rename modl var tok) body
 
+let rec int = function
+  | 0 -> [ Var "x" ]
+  | n -> [ Var "f"; Parens (int (n - 1)) ]
+
+let str s =
+  String.to_seq s |> List.of_seq
+  |> List.rev_map (fun c -> Integer (int_of_char c))
+  |> List.fold_left
+       (fun acc i -> Fun ("f", [ Var "f"; i; acc ]))
+       (Fun ("x", [ Fun ("x0", [ Fun ("y", [ Var "x0" ]) ]) ]))
+
 let rec eval modl = function
   | Def (name, body) ->
       Hashtbl.replace modl.defs name body;
@@ -40,13 +51,14 @@ let rec eval modl = function
   | Parens [ Fun (var, body); tok ] -> apply modl var body tok
   | Parens ptoks -> interpret modl ptoks
   | Var var -> [ resolve modl var ]
+  | Integer i -> [ Fun ("f", [ Fun ("x", int i) ]) ]
+  | Str s -> [ str s ]
   | t -> [ t ]
 
 and interpret modl = function
   | (Fun (_, _) as f) :: tk :: ts ->
       let res = eval modl @@ Parens [ f; tk ] in
-      if res = [ f; tk ] then f :: tk :: interpret modl ts
-      else interpret modl (res @ ts)
+      interpret modl (res @ ts)
   | t :: ts -> (
       match eval modl t with
       | [] -> interpret modl ts
@@ -58,5 +70,5 @@ and interpret modl = function
           else interpret modl (res @ ts))
   | [] -> []
 
-let test str =
-  parse default_setts ((String.to_seq str) ()) |> interpret default_modl
+(* let test str = *)
+(*   parse default_setts ((String.to_seq str) ()) |> interpret default_modl *)

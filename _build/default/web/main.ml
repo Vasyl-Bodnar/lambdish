@@ -22,9 +22,17 @@ let make_div d parent text =
 
 let std_lib : string =
   {|
-  (I := \x.x)
-  (K := \x.y.x)
   (S := \x.y.z.x z(y z))
+  (K := \x.y.x)
+  (I := \x.x)
+
+  (true := K)
+  (false := S K)
+
+  (cons := \f.x.y.f x y)
+  (nil := \x.K)
+  (car := \p.p K)
+  (cdr := \p.p S K)
 |}
 
 let onload _ =
