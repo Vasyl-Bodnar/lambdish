@@ -29,10 +29,10 @@ let std_lib : string =
   (true := K)
   (false := S K)
 
-  (cons := \f.x.y.f x y)
-  (nil := \x.K)
-  (car := \p.p K)
-  (cdr := \p.p S K)
+  (cons := \x.y.f.f x y)
+  (nil := \x.true)
+  (car := \p.p true)
+  (cdr := \p.p false)
 |}
 
 let onload _ =
