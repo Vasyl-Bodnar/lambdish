@@ -3272,7 +3272,7 @@
     accu =
       [1, cst_x, [0, [1, cst_x0, [0, [1, "y", [0, [2, cst_x0], 0]], 0]], 0]],
     std_lib =
-      "\n  (S := \\x.y.z.x z(y z))\n  (K := \\x.y.x)\n  (I := \\x.x)\n\n  (true := K)\n  (false := S K)\n\n  (cons := \\f.x.y.f x y)\n  (nil := \\x.K)\n  (car := \\p.p K)\n  (cdr := \\p.p S K)\n";
+      "\n  (S := \\x.y.z.x z(y z))\n  (K := \\x.y.x)\n  (I := \\x.x)\n\n  (true := K)\n  (false := S K)\n\n  (cons := \\x.y.f.f x y)\n  (nil := \\x.true)\n  (car := \\p.p true)\n  (cdr := \\p.p false)\n";
    caml_register_global
     (11, Undefined_recursive_module, cst_Undefined_recursive_module);
    caml_register_global(10, Assert_failure, cst_Assert_failure);
