@@ -2,6 +2,21 @@ open Printf
 open Lambdish.Parser
 open Lambdish.Interpreter
 
+let std_lib : string =
+  {|
+  (S := \x.y.z.x z(y z))
+  (K := \x.y.x)
+  (I := \x.x)
+
+  (true := K)
+  (false := S K)
+
+  (cons := \x.y.f.f x y)
+  (nil := \x.true)
+  (car := \p.p true)
+  (cdr := \p.p false)
+|}
+
 let string_run ?(print = print_endline) ?(modl = default_modl) str =
   try
     parse default_setts (String.to_seq str ())
@@ -23,6 +38,7 @@ let file_run ?(modl = default_modl) name args =
       inn { modl with line = modl.line + 1 }
     with End_of_file -> ()
   in
+  string_run ~print:(fun _ -> ()) ~modl std_lib;
   List.iteri
     (fun i s ->
       string_run ~print:(fun _ -> ()) ~modl (sprintf "$%i := \"%s\"" i s))
@@ -36,5 +52,6 @@ let run libfile =
     inn modl
   in
   let modl = default_modl in
+  string_run ~print:(fun _ -> ()) ~modl std_lib;
   if libfile <> "" then file_run ~modl libfile [] else ();
   inn modl

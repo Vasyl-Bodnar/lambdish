@@ -23,6 +23,10 @@ Here are some implementation details:
     ```
     "Hello World" => (λf. f 72 (λf. f 101 (λf. f 108 (λf. f 108 (λf. f 111 (λf. f 32 (λf. f 87 (λf. f 111 (λf. f 114 (λf. f 108 (λf. f 100 (λx. (λx0. (λy. x0))))))))))))))
     ```
+- Symbols are pure text, useful for testing since numbers and strings would be expanded
+    ```
+    I 'alpha => alpha
+    ```
 - Certain functions and operations are predefined, such as:
     - `S`, `K`, and `I`
     - `true`, `false`

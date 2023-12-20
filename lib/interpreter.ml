@@ -51,6 +51,7 @@ let rec eval modl = function
   | Parens [ Fun (var, body); tok ] -> apply modl var body tok
   | Parens ptoks -> interpret modl ptoks
   | Var var -> [ resolve modl var ]
+  | Symb sym -> [ Symb sym ]
   | Integer i -> [ Fun ("f", [ Fun ("x", int i) ]) ]
   | Str s -> [ str s ]
   | t -> [ t ]
